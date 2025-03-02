@@ -1,6 +1,6 @@
-# Create a Strategy
+﻿# Create a Strategy
 
-
+import datetime
 import backtrader as bt 
 class TestStrategy(bt.Strategy):
 
@@ -72,17 +72,37 @@ class TestStrategy(bt.Strategy):
 class RSIEMAStrategy(bt.Strategy):
     params = (
         ('rsi_period', 14),
-        ('ema_period', 20),
+        ('sma_period', 20),
     )
     
     def __init__(self):
         self.rsi = bt.indicators.RSI(period=self.params.rsi_period)
-        self.ema = bt.indicators.EMA(period=self.params.ema_period)
+        self.ema = bt.indicators.SMA(period=self.params.sma_period)
     
     def next(self):
         dt = self.datas[0].datetime.datetime(0)  # Get the current datetime
         close_price = self.datas[0].close[0]  # Get the current close price
         ShortOrLong = ""
+
+        if self.order:
+            return  # Avoid multiple orders
+
+
+        
+
+        if self.data.close[0] > self.ema[0] and self.rsi[0] > 60 and self.position.size <= 0:
+            self.order = self.close(exectype=bt.Order.Close) # Close any existing short positions
+            self.order = self.buy(size=10, exectype=bt.Order.Close)
+            print(f"Buy Price: {self.data.close[0]} - {dt}")
+
+        elif self.data.close[0] < self.ema[0] and self.rsi[0] < 40 and self.position.size >= 0:
+            self.order = self.close(exectype=bt.Order.Close)  # Close any existing long positions
+            self.order = self.sell(size=10, exectype=bt.Order.Close)
+            print(f"Short Price: {self.data.close[0]} - {dt} - {self.position.size}")
+        else:
+            # Optional: Define an exit strategy if needed
+            pass
+
 
         if self.position.size > 0:
             ShortOrLong = "Long Position Open"
@@ -91,16 +111,15 @@ class RSIEMAStrategy(bt.Strategy):
         elif self.position.size == 0:
             ShortOrLong = "No Trades Open"
 
-        print(f"{dt} - Close Price: {close_price} - {ShortOrLong} - {self.position.size}")  # Print datetime & close price
 
-        if self.data.close[0] > self.ema[0] and self.rsi[0] > 60 and self.position.size <= 0:
-            self.close()  # Close any existing short positions
-            self.buy(size=100)  # Enter a long position
+        print(f"{dt} - Close Price: {close_price} - {ShortOrLong} - {self.position.size} - RSI Value: {self.rsi[0]} - SMA Value : {self.ema[0]}")  # Print datetime & close price
 
-        elif self.data.close[0] < self.ema[0] and self.rsi[0] < 40 and self.position.size >= 0:
-            self.close()  # Close any existing long positions
-            self.sell(size=100)  # Enter a short position
-
-        else:
-            # Optional: Define an exit strategy if needed
-            pass
+    def notify_order(self, order):
+        """ Track executed orders """
+        if order.status in [bt.Order.Completed]:
+            exec_price = order.executed.price
+            dt = self.datas[0].datetime.datetime(0)
+            print(f"{dt} - ORDER EXECUTED at {exec_price}, Size: {order.executed.size}")
+        elif order.status in [bt.Order.Canceled, bt.Order.Margin, bt.Order.Rejected]:
+            print("Order Canceled/Rejected")
+        self.order = None  # Reset order tracking

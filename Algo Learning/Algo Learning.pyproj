@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>95bacf66-ba87-43ed-9a72-23988b34a823</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Algo_Learning.py</StartupFile>
+    <StartupFile>FGIndex.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -21,9 +21,14 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="FGIndex.py" />
+    <Compile Include="NewAllinStrat.py" />
     <Compile Include="RSIEMAStrategy.py" />
     <Compile Include="strategy.py" />
     <Compile Include="Algo_Learning.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="FGIndex.csv" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
